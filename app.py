@@ -47,6 +47,7 @@ def login():
             result = client.auth.sign_in_with_password({"email": email, "password": password})
             session["access_token"] = result.session.access_token
             session["user_id"] = result.user.id
+            session["email"] = result.user.email
             return redirect(url_for("home"))
         except Exception as e:
             return f"Ошибка входа: {e}"
@@ -74,7 +75,9 @@ def home():
     response = client.table("notes").select("*").execute()
     notes = response.data
 
-    html = "<a href='/create'>Создать</a><a href='/logout'>Выйти</a><ul>"
+    html = f"<p>Вы вошли как: {session.get('email')}</p>"
+
+    html = "<a href='/create'>Создать</a><p>{session.get('email')}</p><a href='/logout'>Выйти</a><ul>"
     for note in notes:
         html += f'<li>{note["headline"]}: {note["text"]}</li>'
     html += "</ul>"
@@ -86,7 +89,7 @@ def create():
     if "access_token" not in session:
         return redirect(url_for("login"))
 
-    html = "<button onclick='window.history.back()'>Назад</button><a href='/logout'>Выйти</a>"
+    html = "<button onclick='window.history.back()'>Назад</button><p>{session.get('email')}</p><a href='/logout'>Выйти</a>"
     html += '''
         <form method="post" action="/add">
             <input name="headline" placeholder="Заголовок" required>
