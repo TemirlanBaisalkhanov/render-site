@@ -94,19 +94,6 @@ def home():
     '''
     return html
 
-
-
-document.querySelectorAll(".date").forEach(element => {
-    let utcString = element.dataset.date;
-    utcString = utcString.replace(" ", "T");
-
-    const date = new Date(utcString);
-
-    console.log("Local:", date.toLocaleString("ru-RU"));
-});
-
-
-
 @app.route("/create")
 def create():
     if "access_token" not in session:
