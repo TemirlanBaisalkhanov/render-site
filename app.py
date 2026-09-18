@@ -25,17 +25,16 @@ def signup():
         client = create_client(SUPABASE_URL, SUPABASE_KEY)
         try:
             client.auth.sign_up({"email": email, "password": password})
-            return "Регистрация успешна! Теперь войдите. <a href='/login'>Войти</a>"
+            return "Регистрация успешна! Теперь подтвердите почту. <a href='https://mail.google.com/'>Открыть почту</a>"
         except Exception as e:
             return f"Ошибка: {e}"
     return '''
-        <h1>Регистрация</h1>
+        <a href="/login">Или войти?</a>
         <form method="post">
             Email: <input name="email" type="email" required><br>
             Пароль: <input name="password" type="password" required><br>
             <button type="submit">Зарегистрироваться</button>
         </form>
-        <a href="/login">Уже есть аккаунт? Войти</a>
     '''
 
 @app.route("/login", methods=["GET", "POST"])
@@ -52,13 +51,13 @@ def login():
         except Exception as e:
             return f"Ошибка входа: {e}"
     return '''
-        <h1>Вход</h1>
+        <a href="/signup">Или зарегистрироваться?</a>
         <form method="post">
             Email: <input name="email" type="email" required><br>
             Пароль: <input name="password" type="password" required><br>
+            <a href="/#">Забыли пароль?</a>
             <button type="submit">Войти</button>
         </form>
-        <a href="/signup">Нет аккаунта? Зарегистрироваться</a>
     '''
 
 @app.route("/logout")
@@ -75,14 +74,24 @@ def home():
     response = client.table("notes").select("*").execute()
     notes = response.data
 
-    html = "<h1>Мои заметки</h1><p><a href='/logout'>Выйти</a></p><ul>"
+    html = "<a href='/create'>Создать</a><a href='/logout'>Выйти</a><ul>"
     for note in notes:
-        html += f'<li>{note["text"]}</li>'
+        html += f'<li>{note["headline"]}: {note["text"]}</li>'
     html += "</ul>"
+
+    return html
+
+@app.route("/create")
+def create():
+    if "access_token" not in session:
+        return redirect(url_for("login"))
+
+    html = "<button onclick='window.history.back()'>Назад</button><a href='/logout'>Выйти</a>"
     html += '''
         <form method="post" action="/add">
+            <input name="headline" placeholder="Заголовок" required>
             <input name="text" placeholder="Новая заметка" required>
-            <button type="submit">Добавить</button>
+            <button type="submit">Создать</button>
         </form>
     '''
     return html
@@ -92,9 +101,10 @@ def add():
     if "access_token" not in session:
         return redirect(url_for("login"))
 
+    headline = request.form["headline"]
     text = request.form["text"]
     client = get_client()
-    client.table("notes").insert({"text": text, "user_id": session["user_id"]}).execute()
+    client.table("notes").insert({"headline": headline,"text": text, "user_id": session["user_id"]}).execute()
     return redirect(url_for("home"))
 
 if __name__ == "__main__":
