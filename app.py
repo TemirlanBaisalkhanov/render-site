@@ -104,7 +104,7 @@ def add():
     headline = request.form["headline"]
     text = request.form["text"]
     client = get_client()
-    client.table("notes").insert({"headline": headline,"text": text, "id_user": session["id_user"]}).execute()
+    client.table("notes").insert({"headline": headline,"text": text, "id_user": session["user_id"]}).execute()
     return redirect(url_for("home"))
 
 if __name__ == "__main__":
