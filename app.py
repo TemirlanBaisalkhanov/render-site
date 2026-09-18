@@ -84,17 +84,28 @@ def home():
         <script>
             document.querySelectorAll(".date").forEach(element => {
                 let utcString = element.dataset.date;
-
                 utcString = utcString.replace(" ", "T");
-                utcString = utcString.replace("+00", "+00:00");
 
                 const date = new Date(utcString);
 
-                element.textContent = date.toLocaleString();
+                element.textContent = date.toLocaleString("ru-RU");
             });
         </script>
     '''
     return html
+
+
+
+document.querySelectorAll(".date").forEach(element => {
+    let utcString = element.dataset.date;
+    utcString = utcString.replace(" ", "T");
+
+    const date = new Date(utcString);
+
+    console.log("Local:", date.toLocaleString("ru-RU"));
+});
+
+
 
 @app.route("/create")
 def create():
