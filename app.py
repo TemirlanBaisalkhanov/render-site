@@ -79,7 +79,7 @@ def home():
 
     html = "<a href='/create'>Создать</a><p>{session.get('email')}</p><a href='/logout'>Выйти</a><ul>"
     for note in notes:
-        html += f'<li>{note["headline"]}: {note["text"]}</li>'
+        html += f'<li>{note["headline"]}: {note["text"]} create at {note["created_at"]}</li>'
     html += "</ul>"
 
     return html
