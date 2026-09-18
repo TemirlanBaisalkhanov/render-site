@@ -75,13 +75,25 @@ def home():
     response = client.table("notes").select("*").execute()
     notes = response.data
 
-    html = f"<p>Вы вошли как: {session.get('email')}</p>"
-
-    html = "<a href='/create'>Создать</a><p>{session.get('email')}</p><a href='/logout'>Выйти</a><ul>"
+    html = f"<a href='/create'>Создать</a><p>{session.get('email')}</p><a href='/logout'>Выйти</a><ul>"
     for note in notes:
-        html += f'<li>{note["headline"]}: {note["text"]} create at {note["created_at"]}</li>'
+        html += f'<li>{note["headline"]}: {note["text"]} (Последнее изменение:  <span class="date" data-date="{note["created_at"]}"></span>)</li>'
     html += "</ul>"
 
+    html += '''
+        <script>
+            document.querySelectorAll(".date").forEach(element => {
+                let utcString = element.dataset.date;
+
+                utcString = utcString.replace(" ", "T");
+                utcString = utcString.replace("+00", "+00:00");
+
+                const date = new Date(utcString);
+
+                element.textContent = date.toLocaleString();
+            });
+        </script>
+    '''
     return html
 
 @app.route("/create")
@@ -89,7 +101,7 @@ def create():
     if "access_token" not in session:
         return redirect(url_for("login"))
 
-    html = "<button onclick='window.history.back()'>Назад</button><p>{session.get('email')}</p><a href='/logout'>Выйти</a>"
+    html = f"<button onclick='window.history.back()'>Назад</button><p>{session.get('email')}</p><a href='/logout'>Выйти</a>"
     html += '''
         <form method="post" action="/add">
             <input name="headline" placeholder="Заголовок" required>
