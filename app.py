@@ -17,6 +17,42 @@ def get_client():
         client.postgrest.auth(session["access_token"])
     return client
 
+@app.route("/add", methods=["POST"])
+def add():
+    if "access_token" not in session:
+        return redirect(url_for("login"))
+
+    headline = request.form["headline"]
+    text = request.form["text"]
+    client = get_client()
+    client.table("notes").insert({"headline": headline,"text": text, "id_user": session["user_id"]}).execute()
+    return redirect(url_for("home"))
+
+# в разработке
+@app.route("/edit", methods=["POST"])
+def edit():
+    if "access_token" not in session:
+        return redirect(url_for("login"))
+    
+    note_id = request.form["note_id"]
+    headline = request.form["headline"]
+    text = request.form["text"]
+
+    client = get_client()
+    
+    client.table("notes")\
+        .update({"headline": headline, "text": text})\
+        .eq("id_note", note_id)\
+        .eq("id_user", session["user_id"])\
+        .execute()
+
+    return redirect(url_for("home"))
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
@@ -61,11 +97,6 @@ def login():
         </form>
     '''
 
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect(url_for("login"))
-
 @app.route("/")
 def home():
     if "access_token" not in session:
@@ -77,7 +108,7 @@ def home():
 
     html = f"<a href='/create'>Создать</a><p>{session.get('email')}</p><a href='/logout'>Выйти</a><ul>"
     for note in notes:
-        html += f'<li>{note["headline"]}: {note["text"]} (Последнее изменение:  <span class="date" data-date="{note["created_at"]}"></span>)</li>'
+        html += f"""<li><a href='/change?id={note["id_notes"]}'>{note["headline"]}: {note["text"]} (Последнее изменение:  <span class='date' data-date='{note["created_at"]}'></span>)</a></li>"""
     html += "</ul>"
 
     html += '''
@@ -109,16 +140,30 @@ def create():
     '''
     return html
 
-@app.route("/add", methods=["POST"])
-def add():
+# в разработке
+@app.route("/change")
+def change():
     if "access_token" not in session:
         return redirect(url_for("login"))
+    
+    note_id = request.args.get("id")
 
-    headline = request.form["headline"]
-    text = request.form["text"]
     client = get_client()
-    client.table("notes").insert({"headline": headline,"text": text, "id_user": session["user_id"]}).execute()
-    return redirect(url_for("home"))
+    response = client.table("notes").select("*").eq("id_note", note_id).execute()
+    if not response.data:
+        return "Заметка не найдена", 404
+    note = response.data[0]
+
+    html = f"<button onclick='window.history.back()'>Назад</button><p>{session.get('email')}</p><a href='/logout'>Выйти</a>"
+    html += f'''
+        <form method="post" action="/edit">
+            <input type="hidden" name="id_note" value="{note_id}">
+            <input name="headline" value='{note["headline"]}' required>
+            <input name="text" value='{note["text"]}' required>
+            <button type="submit">Изменить</button>
+        </form>
+    '''
+    return html
 
 if __name__ == "__main__":
     app.run(debug=True)
