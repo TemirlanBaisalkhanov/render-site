@@ -108,7 +108,7 @@ def home():
 
     html = f"<a href='/create'>Создать</a><p>{session.get('email')}</p><a href='/logout'>Выйти</a><ul>"
     for note in notes:
-        html += f"""<li><a href='/change?id={note["id_notes"]}'>{note["headline"]}: {note["text"]} (Последнее изменение:  <span class='date' data-date='{note["created_at"]}'></span>)</a></li>"""
+        html += f"""<li><a href='/change?id={note["id_note"]}'>{note["headline"]}: {note["text"]} (Последнее изменение:  <span class='date' data-date='{note["created_at"]}'></span>)</a></li>"""
     html += "</ul>"
 
     html += '''
