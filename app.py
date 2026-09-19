@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+DOMAIN = "https://anymynote.vercel.app/"
+EMAIL = "https://mail.google.com/"
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "change-me-please")
 
@@ -28,7 +31,6 @@ def add():
     client.table("notes").insert({"headline": headline,"text": text, "id_user": session["user_id"]}).execute()
     return redirect(url_for("home"))
 
-# в разработке
 @app.route("/edit", methods=["POST"])
 def edit():
     if "access_token" not in session:
@@ -48,6 +50,25 @@ def edit():
 
     return redirect(url_for("home"))
 
+#В разработке
+@app.route("/reset-password", methods=["POST"])
+def reset_password_submit():
+    data = request.get_json()
+    access_token = data.get("access_token")
+    refresh_token = data.get("refresh_token")
+    password = data.get("password")
+
+    if not access_token:
+        return "Ошибка: токен не найден. Откройте ссылку из письма заново.", 400
+
+    client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    try:
+        client.auth.set_session(access_token, refresh_token)
+        client.auth.update_user({"password": password})
+        return "Пароль изменён! Сейчас перекинем на вход."
+    except Exception as e:
+        return f"Ошибка: {e}", 400
+
 @app.route("/logout")
 def logout():
     session.clear()
@@ -61,7 +82,7 @@ def signup():
         client = create_client(SUPABASE_URL, SUPABASE_KEY)
         try:
             client.auth.sign_up({"email": email, "password": password})
-            return "Регистрация успешна! Теперь подтвердите почту. <a href='https://mail.google.com/'>Открыть почту</a>"
+            return f"Регистрация успешна! Теперь подтвердите почту. <a href='{EMAIL}'>Открыть почту</a>"
         except Exception as e:
             return f"Ошибка: {e}"
     return '''
@@ -140,7 +161,6 @@ def create():
     '''
     return html
 
-# в разработке
 @app.route("/change")
 def change():
     if "access_token" not in session:
@@ -178,6 +198,61 @@ def change():
         </script>
     '''
     return html
+
+#В разработке
+@app.route("/forgot", methods=["GET", "POST"])
+def forgot():
+    if request.method == "POST":
+        email = request.form["email"]
+        client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        try:
+            client.auth.reset_password_email(
+                email,
+                {"redirect_to": DOMAIN + "//reset-password"}
+            )
+            return "Письмо для сброса пароля отправлено, проверьте почту."
+        except Exception as e:
+            return f"Ошибка: {e}"
+    return '''
+        <a href="/login">Назад ко входу</a>
+        <form method="post">
+            Email: <input name="email" type="email" required><br>
+            <button type="submit">Отправить ссылку для сброса</button>
+        </form>
+    '''
+
+@app.route("/reset-password", methods=["GET"])
+def reset_password_page():
+    return '''
+        <h1>Новый пароль</h1>
+        <form id="resetForm">
+            <input type="password" id="password" placeholder="Новый пароль" required minlength="6">
+            <button type="submit">Сохранить</button>
+        </form>
+        <p id="msg"></p>
+        <script>
+            const hash = window.location.hash.substring(1);
+            const params = new URLSearchParams(hash);
+            const access_token = params.get("access_token");
+            const refresh_token = params.get("refresh_token");
+
+            document.getElementById("resetForm").addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const password = document.getElementById("password").value;
+
+                const res = await fetch("/reset-password", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({access_token, refresh_token, password})
+                });
+                const text = await res.text();
+                document.getElementById("msg").textContent = text;
+                if (res.ok) {
+                    setTimeout(() => window.location.href = "/login", 1500);
+                }
+            });
+        </script>
+    '''
 
 if __name__ == "__main__":
     app.run(debug=True)
