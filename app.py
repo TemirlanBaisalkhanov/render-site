@@ -34,7 +34,7 @@ def edit():
     if "access_token" not in session:
         return redirect(url_for("login"))
     
-    note_id = request.form["note_id"]
+    id_note = request.form["id_note"]
     headline = request.form["headline"]
     text = request.form["text"]
 
@@ -42,7 +42,7 @@ def edit():
     
     client.table("notes")\
         .update({"headline": headline, "text": text})\
-        .eq("id_note", note_id)\
+        .eq("id_note", id_note)\
         .eq("id_user", session["user_id"])\
         .execute()
 
@@ -146,10 +146,10 @@ def change():
     if "access_token" not in session:
         return redirect(url_for("login"))
     
-    note_id = request.args.get("id")
+    id_note = request.args.get("id")
 
     client = get_client()
-    response = client.table("notes").select("*").eq("id_note", note_id).execute()
+    response = client.table("notes").select("*").eq("id_note", id_note).execute()
     if not response.data:
         return "Заметка не найдена", 404
     note = response.data[0]
@@ -157,7 +157,7 @@ def change():
     html = f"<button onclick='window.history.back()'>Назад</button><p>{session.get('email')}</p><a href='/logout'>Выйти</a>"
     html += f'''
         <form method="post" action="/edit">
-            <input type="hidden" name="id_note" value="{note_id}">
+            <input type="hidden" name="id_note" value="{id_note}">
             <input name="headline" value='{note["headline"]}' required>
             <input name="text" value='{note["text"]}' required>
             <button type="submit">Изменить</button>
