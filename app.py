@@ -108,7 +108,7 @@ def home():
 
     html = f"<a href='/create'>Создать</a><p>{session.get('email')}</p><a href='/logout'>Выйти</a><ul>"
     for note in notes:
-        html += f"""<li><a href='/change?id={note["id_note"]}'>{note["headline"]}: {note["text"]} (Последнее изменение:  <span class='date' data-date='{note["created_at"]}'></span>)</a></li>"""
+        html += f"""<li><a href='/change?id={note["id_note"]}'>{note["headline"]}: {note["text"]} (Создано:  <span class='date' data-date='{note["created_at"]}'></span>)</a></li>"""
     html += "</ul>"
 
     html += '''
@@ -155,6 +155,8 @@ def change():
     note = response.data[0]
 
     html = f"<button onclick='window.history.back()'>Назад</button><p>{session.get('email')}</p><a href='/logout'>Выйти</a>"
+    html += f"Создано:  <span class='date' data-date='{note["created_at"]}'></span>"
+    
     html += f'''
         <form method="post" action="/edit">
             <input type="hidden" name="id_note" value="{id_note}">
@@ -162,6 +164,18 @@ def change():
             <input name="text" value='{note["text"]}' required>
             <button type="submit">Изменить</button>
         </form>
+    '''
+    html += '''
+        <script>
+            document.querySelectorAll(".date").forEach(element => {
+                let utcString = element.dataset.date;
+                utcString = utcString.replace(" ", "T");
+
+                const date = new Date(utcString);
+
+                element.textContent = date.toLocaleString("ru-RU");
+            });
+        </script>
     '''
     return html
 
