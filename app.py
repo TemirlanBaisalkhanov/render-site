@@ -113,7 +113,7 @@ def login():
         <form method="post">
             Email: <input name="email" type="email" required><br>
             Пароль: <input name="password" type="password" required><br>
-            <a href="/#">Забыли пароль?</a>
+            <a href="/forgot">Забыли пароль?</a>
             <button type="submit">Войти</button>
         </form>
     '''
@@ -214,7 +214,7 @@ def forgot():
         except Exception as e:
             return f"Ошибка: {e}"
     return '''
-        <a href="/login">Назад ко входу</a>
+        <button onclick='window.history.back()'>Назад</button>
         <form method="post">
             Email: <input name="email" type="email" required><br>
             <button type="submit">Отправить ссылку для сброса</button>
@@ -224,7 +224,7 @@ def forgot():
 @app.route("/reset-password", methods=["GET"])
 def reset_password_page():
     return '''
-        <h1>Новый пароль</h1>
+        <button onclick='window.history.back()'>Назад</button>
         <form id="resetForm">
             <input type="password" id="password" placeholder="Новый пароль" required minlength="6">
             <button type="submit">Сохранить</button>
