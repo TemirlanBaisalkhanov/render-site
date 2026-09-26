@@ -45,9 +45,32 @@ def add():
 
     try:
         embedding = get_embedding(text)
-        client.table("notes").insert({"headline": headline,"text": text, "id_user": session["user_id"], "embedding": embedding }).execute()
+        result = client.table("notes").insert({
+            "headline": headline,
+            "text": text,
+            "id_user": session["user_id"],
+            "embedding": embedding
+        }).execute()
+
+        new_note_id = result.data[0]["id_note"]
+
+        matches = client.rpc("match_notes", {
+            "query_embedding": embedding,
+            "match_user_id": session["user_id"],
+            "match_note_id": new_note_id,
+            "match_count": 5
+        }).execute()
+
+        for match in matches.data:
+            client.table("note_edges").insert({
+                "note_id": new_note_id,
+                "related_note_id": match["id_note"],
+                "similarity": match["similarity"]
+            }).execute()
+
     except Exception as e:
         return f"Ошибка при добавлении: {e}"
+
     return redirect(url_for("home"))
 
 @app.route("/edit", methods=["POST"])
