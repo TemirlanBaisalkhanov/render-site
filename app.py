@@ -16,6 +16,9 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
 
+def truncate(text, length):
+    return text[:length] + "..." if len(text) > length else text
+
 def get_embedding(text):
     response = get_client().functions.invoke(
         "generate-embedding",
@@ -234,8 +237,8 @@ def home():
     for note in notes:
         html += f"""<li>
             <a href='/change?id={note["id_note"]}'>
-                {note["headline"].slice(0, 20) + '...'}: 
-                {note["text"].slice(0, 80) + '...'} 
+                {truncate(note["headline"],20)}: 
+                {truncate(note["text"], 80)} 
                 (Создано:  <span class='date' data-date='{note["created_at"]}'></span>)
             </a>
                 <form method="post" action="/delete" onsubmit="return confirm('Удалить заметку?')">
