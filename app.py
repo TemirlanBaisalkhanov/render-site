@@ -21,7 +21,11 @@ def get_embedding(text):
         "generate-embedding",
         invoke_options={"body": {"text": text}}
     )
+    if isinstance(response, bytes):
+        response = response.decode("utf-8")
     data = json.loads(response)
+    if "embedding" not in data:
+        raise Exception(f"Функция вернула: {data}")
     return data["embedding"]
 
 def get_client():
@@ -41,7 +45,7 @@ def add():
 
     try:
         embedding = get_embedding(text)
-        client.table("notes").insert({"headline": headline,"text": text, "id_user": session["user_id", "embedding": embedding ]}).execute()
+        client.table("notes").insert({"headline": headline,"text": text, "id_user": session["user_id"], "embedding": embedding }).execute()
     except Exception as e:
         return f"Ошибка при добавлении: {e}"
     return redirect(url_for("home"))
