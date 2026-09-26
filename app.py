@@ -374,5 +374,11 @@ def reset_password_page():
         </script>
     '''
 
+@app.route("/api/keep-alive")
+def keep_alive():
+    client = get_client()
+    client.table("notes").select("id").limit(1).execute()
+    return {"status": "ok"}
+
 if __name__ == "__main__":
     app.run(debug=True)
