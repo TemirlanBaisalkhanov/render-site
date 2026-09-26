@@ -83,12 +83,47 @@ def edit():
     text = request.form["text"]
 
     client = get_client()
-    
-    client.table("notes")\
-        .update({"headline": headline, "text": text})\
-        .eq("id_note", id_note)\
-        .eq("id_user", session["user_id"])\
-        .execute()
+
+    try:
+        # получаем старый embedding перед изменением
+        old = client.table("notes").select("embedding").eq("id_note", id_note).execute()
+        old_embedding = old.data[0]["embedding"]
+
+        new_embedding = get_embedding(text)
+
+        # считаем похожесть старого и нового смысла (скалярное произведение нормализованных векторов)
+        similarity = sum(a * b for a, b in zip(old_embedding, new_embedding))
+
+        client.table("notes")\
+            .update({"headline": headline, "text": text, "embedding": new_embedding})\
+            .eq("id_note", id_note)\
+            .eq("id_user", session["user_id"])\
+            .execute()
+
+        THRESHOLD = 0.92  # подберите на практике
+
+        if similarity < THRESHOLD:
+            # смысл изменился заметно — пересчитываем связи
+            client.table("note_edges").delete().eq("note_id", id_note).execute()
+            client.table("note_edges").delete().eq("related_note_id", id_note).execute()
+
+            matches = client.rpc("match_notes", {
+                "query_embedding": new_embedding,
+                "match_user_id": session["user_id"],
+                "match_note_id": id_note,
+                "match_count": 5
+            }).execute()
+
+            for match in matches.data:
+                client.table("note_edges").insert({
+                    "note_id": id_note,
+                    "related_note_id": match["id_note"],
+                    "similarity": match["similarity"]
+                }).execute()
+        # иначе — ничего не трогаем, старые связи остаются актуальными
+
+    except Exception as e:
+        return f"Ошибка при изменении: {e}"
 
     return redirect(url_for("home"))
 
