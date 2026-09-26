@@ -2,6 +2,7 @@ import os
 from flask import Flask, request, redirect, url_for, session
 from supabase import create_client, Client
 from dotenv import load_dotenv
+import json
 
 load_dotenv()
 
@@ -13,6 +14,15 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", "change-me-please")
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+
+
+def get_embedding(text):
+    response = get_client().functions.invoke(
+        "generate-embedding",
+        invoke_options={"body": {"text": text}}
+    )
+    data = json.loads(response)
+    return data["embedding"]
 
 def get_client():
     client = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -28,7 +38,12 @@ def add():
     headline = request.form["headline"]
     text = request.form["text"]
     client = get_client()
-    client.table("notes").insert({"headline": headline,"text": text, "id_user": session["user_id"]}).execute()
+
+    try:
+        embedding = get_embedding(text)
+        client.table("notes").insert({"headline": headline,"text": text, "id_user": session["user_id", "embedding": embedding ]}).execute()
+    except Exception as e:
+        return f"Ошибка при добавлении: {e}"
     return redirect(url_for("home"))
 
 @app.route("/edit", methods=["POST"])
