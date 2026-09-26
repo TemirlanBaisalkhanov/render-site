@@ -382,7 +382,7 @@ def reset_password_page():
 
 @app.route("/api/keep-alive")
 def keep_alive():
-    supabase_admin.table("notes").select("id").limit(1).execute()
+    supabase_admin.table("notes").select("text").limit(1).execute()
     return {"status": "ok"}
 
 if __name__ == "__main__":
