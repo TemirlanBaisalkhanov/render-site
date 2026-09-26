@@ -15,6 +15,12 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", "change-me-please")
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
+SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+
+supabase_admin = create_client(
+    SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY
+)
 
 def truncate(text, length):
     return text[:length] + "..." if len(text) > length else text
@@ -376,8 +382,7 @@ def reset_password_page():
 
 @app.route("/api/keep-alive")
 def keep_alive():
-    client = get_client()
-    client.table("notes").select("id").limit(1).execute()
+    supabase_admin.table("notes").select("id").limit(1).execute()
     return {"status": "ok"}
 
 if __name__ == "__main__":
