@@ -89,6 +89,9 @@ def edit():
         old = client.table("notes").select("embedding").eq("id_note", id_note).execute()
         old_embedding = old.data[0]["embedding"]
 
+        if isinstance(old_embedding, str):
+            old_embedding = json.loads(old_embedding)
+
         new_embedding = get_embedding(text)
 
         # считаем похожесть старого и нового смысла (скалярное произведение нормализованных векторов)
@@ -124,6 +127,29 @@ def edit():
 
     except Exception as e:
         return f"Ошибка при изменении: {e}"
+
+    return redirect(url_for("home"))
+
+@app.route("/delete", methods=["POST"])
+def delete():
+    if "access_token" not in session:
+        return redirect(url_for("login"))
+
+    id_note = request.form["id_note"]
+    client = get_client()
+
+    try:
+        # сначала удаляем связи, потом саму заметку
+        client.table("note_edges").delete().eq("note_id", id_note).execute()
+        client.table("note_edges").delete().eq("related_note_id", id_note).execute()
+
+        client.table("notes")\
+            .delete()\
+            .eq("id_note", id_note)\
+            .eq("id_user", session["user_id"])\
+            .execute()
+    except Exception as e:
+        return f"Ошибка при удалении: {e}"
 
     return redirect(url_for("home"))
 
@@ -206,7 +232,17 @@ def home():
 
     html = f"<a href='/create'>Создать</a><p>{session.get('email')}</p><a href='/logout'>Выйти</a><ul>"
     for note in notes:
-        html += f"""<li><a href='/change?id={note["id_note"]}'>{note["headline"]}: {note["text"]} (Создано:  <span class='date' data-date='{note["created_at"]}'></span>)</a></li>"""
+        html += f"""<li>
+            <a href='/change?id={note["id_note"]}'>
+                {note["headline"].slice(0, 20) + '...'}: 
+                {note["text"].slice(0, 80) + '...'} 
+                (Создано:  <span class='date' data-date='{note["created_at"]}'></span>)
+            </a>
+                <form method="post" action="/delete" onsubmit="return confirm('Удалить заметку?')">
+                <input type="hidden" name="id_note" value="{note["id_note"]}">
+                <button type="submit">Удалить</button>
+            </form>
+        </li>"""
     html += "</ul>"
 
     html += '''
@@ -260,6 +296,10 @@ def change():
             <input name="headline" value='{note["headline"]}' required>
             <input name="text" value='{note["text"]}' required>
             <button type="submit">Изменить</button>
+        </form>
+        <form method="post" action="/delete" onsubmit="return confirm('Удалить заметку?')">
+            <input type="hidden" name="id_note" value="{id_note}">
+            <button type="submit">Удалить</button>
         </form>
     '''
     html += '''
