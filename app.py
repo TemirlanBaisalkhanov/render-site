@@ -369,7 +369,7 @@ def home():
             <a href='/change?id={note["id_note"]}'>
                 {truncate(note["headline"], 20)}:
                 {truncate(note["text"], 80)}
-                ({updated_label}: {note["updated_at"]})
+                ({updated_label}: <span class='date' data-date='{note["updated_at"]}'></span>)
             </a>
                 <form method="post" action="/delete" onsubmit="return confirm('{confirm_delete_label}')">
                 <input type="hidden" name="id_note" value="{note["id_note"]}">
@@ -377,6 +377,15 @@ def home():
             </form>
         </li>"""
     html += "</ul>"
+
+    html += '''
+        <script>
+            document.querySelectorAll(".date").forEach(element => {
+                const date = new Date(element.dataset.date);
+                element.textContent = date.toLocaleString("ru-RU");
+            });
+        </script>
+    '''
 
     return html
 
@@ -432,7 +441,7 @@ def change():
     confirm_delete_label = _("Удалить заметку?")
 
     html = f"{language_switcher()}<button onclick='window.history.back()'>{back_label}</button><p>{session.get('email')}</p><a href='/logout'>{logout_label}</a>"
-    html += f"<p>{updated_label}: {note['updated_at']}</p>"
+    html += f"<p>{updated_label}: <span class='date' data-date='{note['updated_at']}'></span></p>"
 
     html += f'''
         <form method="post" action="/edit" onsubmit="setUtcTime(this)">
@@ -451,6 +460,10 @@ def change():
             function setUtcTime(form) {{
                 form.querySelector('input[name="updated_at"]').value = new Date().toISOString();
             }}
+            document.querySelectorAll(".date").forEach(element => {{
+                const date = new Date(element.dataset.date);
+                element.textContent = date.toLocaleString("ru-RU");
+            }});
         </script>
     '''
 
