@@ -1,6 +1,8 @@
 import os
+from functools import wraps
 from flask import Flask, request, redirect, url_for, session
 from supabase import create_client, Client
+from postgrest.exceptions import APIError
 from dotenv import load_dotenv
 from flask_babel import Babel, gettext as _
 import json
@@ -80,7 +82,46 @@ def get_client():
     return client
 
 
+# --- Автообновление истёкшего токена ---
+
+def refresh_session():
+    """Пытается обновить access_token через refresh_token. Возвращает True, если удалось."""
+    if "refresh_token" not in session:
+        return False
+    try:
+        client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        result = client.auth.refresh_session(session["refresh_token"])
+        session["access_token"] = result.session.access_token
+        session["refresh_token"] = result.session.refresh_token
+        return True
+    except Exception:
+        return False
+
+
+def with_auto_refresh(f):
+    """Декоратор: если запрос падает из-за истёкшего JWT, обновляет токен и повторяет запрос один раз.
+    Если обновить не удалось — разлогинивает пользователя вместо падения с 500."""
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except APIError as e:
+            message = str(e)
+            if "JWT expired" in message or "PGRST303" in message:
+                if refresh_session():
+                    try:
+                        return f(*args, **kwargs)
+                    except Exception:
+                        session.clear()
+                        return redirect(url_for("login"))
+                session.clear()
+                return redirect(url_for("login"))
+            raise
+    return wrapper
+
+
 @app.route("/add", methods=["POST"])
+@with_auto_refresh
 def add():
     if "access_token" not in session:
         return redirect(url_for("login"))
@@ -117,6 +158,8 @@ def add():
                 "similarity": match["similarity"]
             }).execute()
 
+    except APIError:
+        raise
     except Exception as e:
         error_label = _("Ошибка при добавлении")
         return f"{error_label}: {e}"
@@ -125,6 +168,7 @@ def add():
 
 
 @app.route("/edit", methods=["POST"])
+@with_auto_refresh
 def edit():
     if "access_token" not in session:
         return redirect(url_for("login"))
@@ -173,6 +217,8 @@ def edit():
                     "similarity": match["similarity"]
                 }).execute()
 
+    except APIError:
+        raise
     except Exception as e:
         error_label = _("Ошибка при изменении")
         return f"{error_label}: {e}"
@@ -181,6 +227,7 @@ def edit():
 
 
 @app.route("/delete", methods=["POST"])
+@with_auto_refresh
 def delete():
     if "access_token" not in session:
         return redirect(url_for("login"))
@@ -197,6 +244,8 @@ def delete():
             .eq("id_note", id_note)\
             .eq("id_user", session["user_id"])\
             .execute()
+    except APIError:
+        raise
     except Exception as e:
         error_label = _("Ошибка при удалении")
         return f"{error_label}: {e}"
@@ -272,6 +321,7 @@ def login():
         try:
             result = client.auth.sign_in_with_password({"email": email, "password": password})
             session["access_token"] = result.session.access_token
+            session["refresh_token"] = result.session.refresh_token
             session["user_id"] = result.user.id
             session["email"] = result.user.email
             return redirect(url_for("home"))
@@ -298,6 +348,7 @@ def login():
 
 
 @app.route("/")
+@with_auto_refresh
 def home():
     if "access_token" not in session:
         return redirect(url_for("login"))
@@ -360,6 +411,7 @@ def create():
 
 
 @app.route("/change")
+@with_auto_refresh
 def change():
     if "access_token" not in session:
         return redirect(url_for("login"))
