@@ -1,0 +1,139 @@
+# English translations for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-09-29 14:52+0500\n"
+"PO-Revision-Date: 2026-09-29 14:52+0500\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: app.py:121
+msgid "Ошибка при добавлении"
+msgstr "Error adding note"
+
+#: app.py:177
+msgid "Ошибка при изменении"
+msgstr "Error updating note"
+
+#: app.py:201
+msgid "Ошибка при удалении"
+msgstr "Error deleting note"
+
+#: app.py:215
+msgid "Ошибка: токен не найден. Откройте ссылку из письма заново."
+msgstr "Error: token not found. Please open the link from the email again."
+
+#: app.py:222
+msgid "Пароль изменён! Сейчас перекинем на вход."
+msgstr "Password changed! Redirecting you to login."
+
+#: app.py:224 app.py:247 app.py:420
+msgid "Ошибка"
+msgstr "Error"
+
+#: app.py:236
+msgid "Открыть почту"
+msgstr "Open mail"
+
+#: app.py:237
+msgid "Регистрация успешна! Теперь подтвердите почту."
+msgstr "Registration successful! Please confirm your email."
+
+#: app.py:250
+msgid "Или войти?"
+msgstr "Or log in?"
+
+#: app.py:251 app.py:283 app.py:424
+msgid "Email"
+msgstr "Email"
+
+#: app.py:252 app.py:284
+msgid "Пароль"
+msgstr "Password"
+
+#: app.py:253
+msgid "Зарегистрироваться"
+msgstr "Sign up"
+
+#: app.py:279
+msgid "Ошибка входа"
+msgstr "Login error"
+
+#: app.py:282
+msgid "Или зарегистрироваться?"
+msgstr "Or sign up?"
+
+#: app.py:285
+msgid "Забыли пароль?"
+msgstr "Forgot password?"
+
+#: app.py:286
+msgid "Войти"
+msgstr "Log in"
+
+#: app.py:309 app.py:342
+msgid "Создать"
+msgstr "Create"
+
+#: app.py:310 app.py:339 app.py:376
+msgid "Выйти"
+msgstr "Log out"
+
+#: app.py:311 app.py:377
+msgid "Последнее изменение"
+msgstr "Last updated"
+
+#: app.py:312 app.py:379
+msgid "Удалить"
+msgstr "Delete"
+
+#: app.py:313 app.py:380
+msgid "Удалить заметку?"
+msgstr "Delete this note?"
+
+#: app.py:338 app.py:375 app.py:423 app.py:439
+msgid "Назад"
+msgstr "Back"
+
+#: app.py:340
+msgid "Заголовок"
+msgstr "Title"
+
+#: app.py:341
+msgid "Новая заметка"
+msgstr "New note"
+
+#: app.py:372
+msgid "Заметка не найдена"
+msgstr "Note not found"
+
+#: app.py:378
+msgid "Изменить"
+msgstr "Save changes"
+
+#: app.py:418
+msgid "Письмо для сброса пароля отправлено, проверьте почту."
+msgstr "Password reset email sent, please check your inbox."
+
+#: app.py:425
+msgid "Отправить ссылку для сброса"
+msgstr "Send reset link"
+
+#: app.py:440
+msgid "Новый пароль"
+msgstr "New password"
+
+#: app.py:441
+msgid "Сохранить"
+msgstr "Save"
