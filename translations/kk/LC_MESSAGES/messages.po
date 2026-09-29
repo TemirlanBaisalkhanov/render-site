@@ -1,0 +1,139 @@
+# Kazakh translations for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-09-29 14:52+0500\n"
+"PO-Revision-Date: 2026-09-29 14:52+0500\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: kk\n"
+"Language-Team: kk <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: app.py:121
+msgid "Ошибка при добавлении"
+msgstr "Қосу кезінде қате шықты"
+
+#: app.py:177
+msgid "Ошибка при изменении"
+msgstr "Өзгерту кезінде қате шықты"
+
+#: app.py:201
+msgid "Ошибка при удалении"
+msgstr "Жою кезінде қате шықты"
+
+#: app.py:215
+msgid "Ошибка: токен не найден. Откройте ссылку из письма заново."
+msgstr "Қате: токен табылмады. Хаттағы сілтемені қайта ашыңыз."
+
+#: app.py:222
+msgid "Пароль изменён! Сейчас перекинем на вход."
+msgstr "Құпия сөз өзгертілді! Қазір кіру бетіне бағыттаймыз."
+
+#: app.py:224 app.py:247 app.py:420
+msgid "Ошибка"
+msgstr "Қате"
+
+#: app.py:236
+msgid "Открыть почту"
+msgstr "Поштаны ашу"
+
+#: app.py:237
+msgid "Регистрация успешна! Теперь подтвердите почту."
+msgstr "Тіркелу сәтті өтті! Енді поштаңызды растаңыз."
+
+#: app.py:250
+msgid "Или войти?"
+msgstr "Немесе кіресіз бе?"
+
+#: app.py:251 app.py:283 app.py:424
+msgid "Email"
+msgstr "Email"
+
+#: app.py:252 app.py:284
+msgid "Пароль"
+msgstr "Құпия сөз"
+
+#: app.py:253
+msgid "Зарегистрироваться"
+msgstr "Тіркелу"
+
+#: app.py:279
+msgid "Ошибка входа"
+msgstr "Кіру қатесі"
+
+#: app.py:282
+msgid "Или зарегистрироваться?"
+msgstr "Немесе тіркеліңіз бе?"
+
+#: app.py:285
+msgid "Забыли пароль?"
+msgstr "Құпия сөзді ұмыттыңыз ба?"
+
+#: app.py:286
+msgid "Войти"
+msgstr "Кіру"
+
+#: app.py:309 app.py:342
+msgid "Создать"
+msgstr "Жасау"
+
+#: app.py:310 app.py:339 app.py:376
+msgid "Выйти"
+msgstr "Шығу"
+
+#: app.py:311 app.py:377
+msgid "Последнее изменение"
+msgstr "Соңғы өзгеріс"
+
+#: app.py:312 app.py:379
+msgid "Удалить"
+msgstr "Жою"
+
+#: app.py:313 app.py:380
+msgid "Удалить заметку?"
+msgstr "Жазбаны жоясыз ба?"
+
+#: app.py:338 app.py:375 app.py:423 app.py:439
+msgid "Назад"
+msgstr "Артқа"
+
+#: app.py:340
+msgid "Заголовок"
+msgstr "Тақырып"
+
+#: app.py:341
+msgid "Новая заметка"
+msgstr "Жаңа жазба"
+
+#: app.py:372
+msgid "Заметка не найдена"
+msgstr "Жазба табылмады"
+
+#: app.py:378
+msgid "Изменить"
+msgstr "Сақтау"
+
+#: app.py:418
+msgid "Письмо для сброса пароля отправлено, проверьте почту."
+msgstr "Құпия сөзді қалпына келтіру хаты жіберілді, поштаңызды тексеріңіз."
+
+#: app.py:425
+msgid "Отправить ссылку для сброса"
+msgstr "Қалпына келтіру сілтемесін жіберу"
+
+#: app.py:440
+msgid "Новый пароль"
+msgstr "Жаңа құпия сөз"
+
+#: app.py:441
+msgid "Сохранить"
+msgstr "Сақтау"
