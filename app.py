@@ -31,10 +31,8 @@ app.config["BABEL_TRANSLATION_DIRECTORIES"] = "translations"
 
 
 def get_locale():
-    # 1) если пользователь сам выбрал язык — используем его
     if "lang" in session and session["lang"] in LANGUAGES:
         return session["lang"]
-    # 2) иначе смотрим язык браузера
     return request.accept_languages.best_match(LANGUAGES) or "ru"
 
 
@@ -120,7 +118,8 @@ def add():
             }).execute()
 
     except Exception as e:
-        return f"{_('Ошибка при добавлении')}: {e}"
+        error_label = _("Ошибка при добавлении")
+        return f"{error_label}: {e}"
 
     return redirect(url_for("home"))
 
@@ -175,7 +174,8 @@ def edit():
                 }).execute()
 
     except Exception as e:
-        return f"{_('Ошибка при изменении')}: {e}"
+        error_label = _("Ошибка при изменении")
+        return f"{error_label}: {e}"
 
     return redirect(url_for("home"))
 
@@ -198,7 +198,8 @@ def delete():
             .eq("id_user", session["user_id"])\
             .execute()
     except Exception as e:
-        return f"{_('Ошибка при удалении')}: {e}"
+        error_label = _("Ошибка при удалении")
+        return f"{error_label}: {e}"
 
     return redirect(url_for("home"))
 
@@ -211,7 +212,8 @@ def reset_password_submit():
     password = data.get("password")
 
     if not access_token:
-        return f"{_('Ошибка: токен не найден. Откройте ссылку из письма заново.')}", 400
+        token_error = _("Ошибка: токен не найден. Откройте ссылку из письма заново.")
+        return token_error, 400
 
     client = create_client(SUPABASE_URL, SUPABASE_KEY)
     try:
@@ -219,7 +221,8 @@ def reset_password_submit():
         client.auth.update_user({"password": password})
         return _("Пароль изменён! Сейчас перекинем на вход.")
     except Exception as e:
-        return f"{_('Ошибка')}: {e}", 400
+        error_label = _("Ошибка")
+        return f"{error_label}: {e}", 400
 
 
 @app.route("/logout")
@@ -230,22 +233,32 @@ def logout():
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
+    open_mail_label = _("Открыть почту")
+    signup_success = _("Регистрация успешна! Теперь подтвердите почту.")
+
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
         client = create_client(SUPABASE_URL, SUPABASE_KEY)
         try:
             client.auth.sign_up({"email": email, "password": password})
-            return f"{_('Регистрация успешна! Теперь подтвердите почту.')} <a href='{EMAIL}'>{_('Открыть почту')}</a>"
+            return f"{signup_success} <a href='{EMAIL}'>{open_mail_label}</a>"
         except Exception as e:
-            return f"{_('Ошибка')}: {e}"
+            error_label = _("Ошибка")
+            return f"{error_label}: {e}"
+
+    login_link_label = _("Или войти?")
+    email_label = _("Email")
+    password_label = _("Пароль")
+    signup_button = _("Зарегистрироваться")
+
     return f'''
         {language_switcher()}
-        <a href="/login">{_('Или войти?')}</a>
+        <a href="/login">{login_link_label}</a>
         <form method="post">
-            {_('Email')}: <input name="email" type="email" required><br>
-            {_('Пароль')}: <input name="password" type="password" required><br>
-            <button type="submit">{_('Зарегистрироваться')}</button>
+            {email_label}: <input name="email" type="email" required><br>
+            {password_label}: <input name="password" type="password" required><br>
+            <button type="submit">{signup_button}</button>
         </form>
     '''
 
@@ -263,15 +276,23 @@ def login():
             session["email"] = result.user.email
             return redirect(url_for("home"))
         except Exception as e:
-            return f"{_('Ошибка входа')}: {e}"
+            error_label = _("Ошибка входа")
+            return f"{error_label}: {e}"
+
+    signup_link_label = _("Или зарегистрироваться?")
+    email_label = _("Email")
+    password_label = _("Пароль")
+    forgot_label = _("Забыли пароль?")
+    login_button = _("Войти")
+
     return f'''
         {language_switcher()}
-        <a href="/signup">{_('Или зарегистрироваться?')}</a>
+        <a href="/signup">{signup_link_label}</a>
         <form method="post">
-            {_('Email')}: <input name="email" type="email" required><br>
-            {_('Пароль')}: <input name="password" type="password" required><br>
-            <a href="/forgot">{_('Забыли пароль?')}</a>
-            <button type="submit">{_('Войти')}</button>
+            {email_label}: <input name="email" type="email" required><br>
+            {password_label}: <input name="password" type="password" required><br>
+            <a href="/forgot">{forgot_label}</a>
+            <button type="submit">{login_button}</button>
         </form>
     '''
 
@@ -285,17 +306,23 @@ def home():
     response = client.table("notes").select("*").execute()
     notes = response.data
 
-    html = f"{language_switcher()}<a href='/create'>{_('Создать')}</a><p>{session.get('email')}</p><a href='/logout'>{_('Выйти')}</a><ul>"
+    create_label = _("Создать")
+    logout_label = _("Выйти")
+    updated_label = _("Последнее изменение")
+    delete_label = _("Удалить")
+    confirm_delete_label = _("Удалить заметку?")
+
+    html = f"{language_switcher()}<a href='/create'>{create_label}</a><p>{session.get('email')}</p><a href='/logout'>{logout_label}</a><ul>"
     for note in notes:
         html += f"""<li>
             <a href='/change?id={note["id_note"]}'>
                 {truncate(note["headline"], 20)}:
                 {truncate(note["text"], 80)}
-                ({_('Последнее изменение')}: {note["updated_at"]})
+                ({updated_label}: {note["updated_at"]})
             </a>
-                <form method="post" action="/delete" onsubmit="return confirm('{_('Удалить заметку?')}')">
+                <form method="post" action="/delete" onsubmit="return confirm('{confirm_delete_label}')">
                 <input type="hidden" name="id_note" value="{note["id_note"]}">
-                <button type="submit">{_('Удалить')}</button>
+                <button type="submit">{delete_label}</button>
             </form>
         </li>"""
     html += "</ul>"
@@ -308,13 +335,19 @@ def create():
     if "access_token" not in session:
         return redirect(url_for("login"))
 
-    html = f"{language_switcher()}<button onclick='window.history.back()'>{_('Назад')}</button><p>{session.get('email')}</p><a href='/logout'>{_('Выйти')}</a>"
+    back_label = _("Назад")
+    logout_label = _("Выйти")
+    headline_placeholder = _("Заголовок")
+    text_placeholder = _("Новая заметка")
+    create_button = _("Создать")
+
+    html = f"{language_switcher()}<button onclick='window.history.back()'>{back_label}</button><p>{session.get('email')}</p><a href='/logout'>{logout_label}</a>"
     html += f'''
         <form method="post" action="/add" onsubmit="setUtcTime(this)">
             <input type="hidden" name="updated_at">
-            <input name="headline" placeholder="{_('Заголовок')}" required>
-            <textarea name="text" placeholder="{_('Новая заметка')}" required></textarea>
-            <button type="submit">{_('Создать')}</button>
+            <input name="headline" placeholder="{headline_placeholder}" required>
+            <textarea name="text" placeholder="{text_placeholder}" required></textarea>
+            <button type="submit">{create_button}</button>
         </form>
 
         <script>
@@ -339,8 +372,15 @@ def change():
         return _("Заметка не найдена"), 404
     note = response.data[0]
 
-    html = f"{language_switcher()}<button onclick='window.history.back()'>{_('Назад')}</button><p>{session.get('email')}</p><a href='/logout'>{_('Выйти')}</a>"
-    html += f"<p>{_('Последнее изменение')}: {note['updated_at']}</p>"
+    back_label = _("Назад")
+    logout_label = _("Выйти")
+    updated_label = _("Последнее изменение")
+    edit_button = _("Изменить")
+    delete_label = _("Удалить")
+    confirm_delete_label = _("Удалить заметку?")
+
+    html = f"{language_switcher()}<button onclick='window.history.back()'>{back_label}</button><p>{session.get('email')}</p><a href='/logout'>{logout_label}</a>"
+    html += f"<p>{updated_label}: {note['updated_at']}</p>"
 
     html += f'''
         <form method="post" action="/edit" onsubmit="setUtcTime(this)">
@@ -348,11 +388,11 @@ def change():
             <input type="hidden" name="updated_at">
             <input name="headline" value='{note["headline"]}' required>
             <textarea name="text" required>{note["text"]}</textarea>
-            <button type="submit">{_('Изменить')}</button>
+            <button type="submit">{edit_button}</button>
         </form>
-        <form method="post" action="/delete" onsubmit="return confirm('{_('Удалить заметку?')}')">
+        <form method="post" action="/delete" onsubmit="return confirm('{confirm_delete_label}')">
             <input type="hidden" name="id_note" value="{id_note}">
-            <button type="submit">{_('Удалить')}</button>
+            <button type="submit">{delete_label}</button>
         </form>
 
         <script>
@@ -377,25 +417,35 @@ def forgot():
             )
             return _("Письмо для сброса пароля отправлено, проверьте почту.")
         except Exception as e:
-            return f"{_('Ошибка')}: {e}"
+            error_label = _("Ошибка")
+            return f"{error_label}: {e}"
+
+    back_label = _("Назад")
+    email_label = _("Email")
+    send_button = _("Отправить ссылку для сброса")
+
     return f'''
         {language_switcher()}
-        <button onclick='window.history.back()'>{_('Назад')}</button>
+        <button onclick='window.history.back()'>{back_label}</button>
         <form method="post">
-            {_('Email')}: <input name="email" type="email" required><br>
-            <button type="submit">{_('Отправить ссылку для сброса')}</button>
+            {email_label}: <input name="email" type="email" required><br>
+            <button type="submit">{send_button}</button>
         </form>
     '''
 
 
 @app.route("/reset-password", methods=["GET"])
 def reset_password_page():
+    back_label = _("Назад")
+    new_password_placeholder = _("Новый пароль")
+    save_button = _("Сохранить")
+
     return f'''
         {language_switcher()}
-        <button onclick='window.history.back()'>{_('Назад')}</button>
+        <button onclick='window.history.back()'>{back_label}</button>
         <form id="resetForm">
-            <input type="password" id="password" placeholder="{_('Новый пароль')}" required minlength="6">
-            <button type="submit">{_('Сохранить')}</button>
+            <input type="password" id="password" placeholder="{new_password_placeholder}" required minlength="6">
+            <button type="submit">{save_button}</button>
         </form>
         <p id="msg"></p>
         <script>
